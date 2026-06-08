@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Bildik"
+    given-names: "Yusuf"
+  - family-names: "Löwe"
+    given-names: "Friedrich Vincent"
+  - family-names: "Murugaraj"
+    given-names: "Prem"
+  - family-names: "Baudis"
+    given-names: "Tony"
+title: "noaa-temp-analyzer"
+version: 0.1.0
+date-released: 2026-06-07
