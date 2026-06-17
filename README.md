@@ -66,7 +66,7 @@ uv sync
 * matplotlib
 * click
 
-### Development Tools
+### Development Tools (defined in dependency-groups)
 
 * ruff
 * pytest
@@ -75,6 +75,7 @@ uv sync
 
 ## Usage
 
+> **Temporary Note:** The usage examples below use `uv run python main.py`. later we'll update this to the final CLI command.
 ### Basic Example
 
 ```bash

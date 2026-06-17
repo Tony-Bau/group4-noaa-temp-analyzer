@@ -1,14 +1,17 @@
 [project]
-name = "group-4"
+name = "noaa-temp-analyzer"
 version = "0.1.0"
-description = "Add your description here"
+description = "A command-line tool to analyze NOAA temperature data."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "pandas>=2.3.3",
     "click>=8.4.1",
     "matplotlib>=3.10.9",
-    "pandas>=2.3.3",
-    "pytest>=9.0.3",
     "requests>=2.34.2",
+]
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
     "ruff>=0.15.16",
 ]
