@@ -1,0 +1,25 @@
+stages:
+  - lint
+  - test
+
+default:
+  image: ghcr.io/astral-sh/uv:python3.10-bookworm-slim
+  cache:
+    key:
+      files:
+        - uv.lock
+    paths:
+      - .cache/uv
+  before_script:
+    - uv sync --frozen
+
+lint:
+  stage: lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+
+test:
+  stage: test
+  script:
+    - uv run pytest -v
