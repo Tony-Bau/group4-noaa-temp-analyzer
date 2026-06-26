@@ -10,8 +10,12 @@ dependencies = [
     "matplotlib>=3.10.9",
     "requests>=2.34.2",
 ]
+[project.scripts]
+noaa-temp-analyzer = "noaa_temp_analyzer.cli:main"
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
     "ruff>=0.15.16",
 ]
+[tool.uv]
+package = true
