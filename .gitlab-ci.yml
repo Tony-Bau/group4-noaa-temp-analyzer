@@ -22,4 +22,4 @@ lint:
 test:
   stage: test
   script:
-    - uv run pytest -v --pass-on-empty
+    - uv run pytest -v
