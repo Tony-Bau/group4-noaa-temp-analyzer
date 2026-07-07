@@ -1,0 +1,2 @@
+[console_scripts]
+noaa-temp-analyzer = noaa_temp_analyzer.cli:main
