@@ -1,8 +1,18 @@
 """Command-line interface for noaa-temp-analyzer."""
 
 import logging
+from pathlib import Path
 
 import click
+
+from noaa_temp_analyzer.analysis import (
+    calculate_temperature_statistics,
+    format_statistics,
+)
+from noaa_temp_analyzer.cleaner import clean_temperature_data
+from noaa_temp_analyzer.downloader import download_isd_lite_file
+from noaa_temp_analyzer.loader import load_isd_lite_data
+from noaa_temp_analyzer.plotting import plot_temperature_over_time, save_plot
 
 
 LOGGER = logging.getLogger(__name__)
@@ -59,4 +69,20 @@ def main(station_id: str, year: int, verbose: int, text_only: bool) -> None:
     click.echo(f"Year: {year}")
     click.echo(f"Text-only mode: {'enabled' if text_only else 'disabled'}")
     click.echo()
-    click.echo("Data loading and analysis will be connected later.")
+
+    file_path = download_isd_lite_file(station_id, year)
+    raw_data = load_isd_lite_data(file_path)
+    cleaned_data = clean_temperature_data(raw_data)
+
+    statistics = calculate_temperature_statistics(cleaned_data)
+    click.echo(format_statistics(statistics))
+
+    if not text_only:
+        figure = plot_temperature_over_time(
+            cleaned_data,
+            title=f"Temperature for station {station_id} in {year}",
+        )
+        output_path = Path("plots") / f"{station_id}-{year}.png"
+        save_plot(figure, output_path)
+        click.echo()
+        click.echo(f"Plot saved to: {output_path}")
