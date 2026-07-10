@@ -10,7 +10,7 @@ from noaa_temp_analyzer.downloader import download_isd_lite_file
 
 def test_download_isd_lite_file_returns_existing_file(tmp_path: Path) -> None:
     """Test that an existing file is reused instead of downloaded again."""
-    existing_file = tmp_path / "10468099999-2023.gz"
+    existing_file = tmp_path / "104680-99999-2023.gz"
     existing_file.write_bytes(b"cached content")
 
     with patch("noaa_temp_analyzer.downloader.requests.get") as mock_get:
@@ -31,8 +31,12 @@ def test_download_isd_lite_file_downloads_and_saves(tmp_path: Path) -> None:
     ) as mock_get:
         result = download_isd_lite_file("10468099999", 2023, output_dir=tmp_path)
 
-    mock_get.assert_called_once()
+    mock_get.assert_called_once_with(
+        "https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/2023/104680-99999-2023.gz",
+        timeout=30,
+    )
     assert result.exists()
+    assert result.name == "104680-99999-2023.gz"
     assert result.read_bytes() == b"new content"
 
 
@@ -56,6 +60,15 @@ def test_download_isd_lite_file_creates_output_dir(tmp_path: Path) -> None:
     with patch(
         "noaa_temp_analyzer.downloader.requests.get", return_value=mock_response
     ):
-        download_isd_lite_file("10468099999", 2023, output_dir=new_dir)
+        result = download_isd_lite_file("10468099999", 2023, output_dir=new_dir)
 
     assert new_dir.exists()
+    assert result.name == "104680-99999-2023.gz"
+
+
+def test_download_isd_lite_file_raises_on_invalid_station_id(
+    tmp_path: Path,
+) -> None:
+    """Test that an invalid station ID raises a ValueError."""
+    with pytest.raises(ValueError, match="Station ID must be an 11-digit string"):
+        download_isd_lite_file("104680-99999", 2023, output_dir=tmp_path)
