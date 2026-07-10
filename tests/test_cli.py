@@ -1,7 +1,9 @@
 """Tests for the command-line interface."""
 
-from click.testing import CliRunner
+from pathlib import Path
 from unittest.mock import Mock, patch
+
+from click.testing import CliRunner
 
 from noaa_temp_analyzer.cli import main
 
@@ -10,24 +12,35 @@ def test_cli_runs_with_required_arguments() -> None:
     """Test that the CLI runs with the required arguments."""
     runner = CliRunner()
 
-    with patch("noaa_temp_analyzer.cli.download_isd_lite_file", return_value="data/test.gz"), \
-         patch("noaa_temp_analyzer.cli.load_isd_lite_data", return_value="raw_data"), \
-         patch("noaa_temp_analyzer.cli.clean_temperature_data", return_value="cleaned_data"), \
-         patch(
-             "noaa_temp_analyzer.cli.calculate_temperature_statistics",
-             return_value={
-                 "count": 2,
-                 "mean": 15.0,
-                 "minimum": 10.0,
-                 "maximum": 20.0,
-                 "median": 15.0,
-                 "standard_deviation": 7.07,
-             },
-         ), \
-         patch(
-             "noaa_temp_analyzer.cli.format_statistics",
-             return_value="Temperature statistics\nValid measurements: 2",
-         ):
+    with (
+        patch(
+            "noaa_temp_analyzer.cli.download_isd_lite_file",
+            return_value="data/test.gz",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.load_isd_lite_data",
+            return_value="raw_data",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.clean_temperature_data",
+            return_value="cleaned_data",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.calculate_temperature_statistics",
+            return_value={
+                "count": 2,
+                "mean": 15.0,
+                "minimum": 10.0,
+                "maximum": 20.0,
+                "median": 15.0,
+                "standard_deviation": 7.07,
+            },
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.format_statistics",
+            return_value="Temperature statistics\nValid measurements: 2",
+        ),
+    ):
         result = runner.invoke(
             main,
             ["--station", "10468099999", "--year", "2023", "--text-only"],
@@ -47,29 +60,40 @@ def test_cli_saves_plot_when_not_text_only() -> None:
     runner = CliRunner()
     fake_figure = Mock()
 
-    with patch("noaa_temp_analyzer.cli.download_isd_lite_file", return_value="data/test.gz"), \
-         patch("noaa_temp_analyzer.cli.load_isd_lite_data", return_value="raw_data"), \
-         patch("noaa_temp_analyzer.cli.clean_temperature_data", return_value="cleaned_data"), \
-         patch(
-             "noaa_temp_analyzer.cli.calculate_temperature_statistics",
-             return_value={
-                 "count": 2,
-                 "mean": 15.0,
-                 "minimum": 10.0,
-                 "maximum": 20.0,
-                 "median": 15.0,
-                 "standard_deviation": 7.07,
-             },
-         ), \
-         patch(
-             "noaa_temp_analyzer.cli.format_statistics",
-             return_value="Temperature statistics\nValid measurements: 2",
-         ), \
-         patch(
-             "noaa_temp_analyzer.cli.plot_temperature_over_time",
-             return_value=fake_figure,
-         ) as mock_plot, \
-         patch("noaa_temp_analyzer.cli.save_plot") as mock_save:
+    with (
+        patch(
+            "noaa_temp_analyzer.cli.download_isd_lite_file",
+            return_value="data/test.gz",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.load_isd_lite_data",
+            return_value="raw_data",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.clean_temperature_data",
+            return_value="cleaned_data",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.calculate_temperature_statistics",
+            return_value={
+                "count": 2,
+                "mean": 15.0,
+                "minimum": 10.0,
+                "maximum": 20.0,
+                "median": 15.0,
+                "standard_deviation": 7.07,
+            },
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.format_statistics",
+            return_value="Temperature statistics\nValid measurements: 2",
+        ),
+        patch(
+            "noaa_temp_analyzer.cli.plot_temperature_over_time",
+            return_value=fake_figure,
+        ) as mock_plot,
+        patch("noaa_temp_analyzer.cli.save_plot") as mock_save,
+    ):
         result = runner.invoke(
             main,
             ["--station", "10468099999", "--year", "2023"],
@@ -77,7 +101,10 @@ def test_cli_saves_plot_when_not_text_only() -> None:
 
     assert result.exit_code == 0
     mock_plot.assert_called_once()
-    mock_save.assert_called_once()
+    mock_save.assert_called_once_with(
+        fake_figure,
+        Path("plots") / "10468099999-2023.png",
+    )
     assert "Plot saved to:" in result.output
 
 
@@ -99,3 +126,14 @@ def test_cli_requires_year() -> None:
 
     assert result.exit_code != 0
     assert "Missing option '--year'" in result.output
+
+
+def test_cli_help_mentions_station_id_format() -> None:
+    """Test that the CLI help explains the station ID format."""
+    runner = CliRunner()
+
+    result = runner.invoke(main, ["--help"])
+
+    assert result.exit_code == 0
+    assert "10468099999" in result.output
+    assert "104680-99999" in result.output
