@@ -14,7 +14,7 @@ Example:
 - [*] This Option was selected
 - [~] This option does not apply
 
-Placeholders that we want you to fill in are written as `<name of the placeholder>`.
+Placeholders that we want you to fill in are written as `<name of the placeholder>`
 Please keep the ` ` intact.
 
 Example:
