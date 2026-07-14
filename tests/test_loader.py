@@ -26,9 +26,7 @@ def test_load_isd_lite_data_returns_datetime_and_temperature(tmp_path: Path) -> 
 def test_load_isd_lite_data_parses_datetime_correctly(tmp_path: Path) -> None:
     """Test that the datetime column is correctly parsed from date parts."""
     file_path = tmp_path / "sample.txt"
-    file_path.write_text(
-        "2023 06 15 12  200   60 10100    5    20  1    -9999 -9999\n"
-    )
+    file_path.write_text("2023 06 15 12  200   60 10100    5    20  1    -9999 -9999\n")
 
     data = load_isd_lite_data(file_path)
 
