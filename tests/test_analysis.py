@@ -5,8 +5,9 @@ import pytest
 
 from noaa_temp_analyzer.analysis import (
     calculate_temperature_statistics,
-    format_statistics
+    format_statistics,
 )
+
 
 def test_calculate_temperature_statistics_returns_expected_values() -> None:
     """Test that temperature statistics are calculated correctly."""
@@ -20,6 +21,7 @@ def test_calculate_temperature_statistics_returns_expected_values() -> None:
     assert statistics["maximum"] == 30.0
     assert statistics["median"] == 20.0
 
+
 def test_calculate_temperature_statistics_raises_on_missing_column() -> None:
     """Test that an error is raised if the required column is missing."""
     data = pd.DataFrame({"daytime": ["2023-01-01"]})
@@ -27,12 +29,14 @@ def test_calculate_temperature_statistics_raises_on_missing_column() -> None:
     with pytest.raises(ValueError, match="temperature_celsius"):
         calculate_temperature_statistics(data)
 
+
 def test_calculate_temperature_statistics_raises_on_empty_data() -> None:
     """Test that an error is raised if the data is empty."""
     data = pd.DataFrame({"temperature_celsius": []})
 
     with pytest.raises(ValueError, match="No valid temperature values"):
         calculate_temperature_statistics(data)
+
 
 def test_format_statistics_contains_all_expacted_lines() -> None:
     """Test that the formatted statistics contain all expected lables and values."""

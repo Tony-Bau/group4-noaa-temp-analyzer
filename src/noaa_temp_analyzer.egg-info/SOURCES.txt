@@ -18,3 +18,6 @@ src/noaa_temp_analyzer.egg-info/top_level.txt
 tests/test_analysis.py
 tests/test_cleaner.py
 tests/test_cli.py
+tests/test_downloader.py
+tests/test_loader.py
+tests/test_plotting.py
