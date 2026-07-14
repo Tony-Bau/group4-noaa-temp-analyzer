@@ -23,4 +23,4 @@ test:
   stage: test
   script:
     - uv run pytest -v
-    - uv run noaa-temp-analyzer --station 10471099999 --year 2023 --text-only
+    - uv run noaa-temp-analyzer --station 01003099999 --year 2025 --text-only
