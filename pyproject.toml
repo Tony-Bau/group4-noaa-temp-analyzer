@@ -1,5 +1,5 @@
 [project]
-name = "noaa-temp-analyzer"
+name = "noaa-temp-analyzer-group4"
 version = "0.1.0"
 description = "A command-line tool to analyze NOAA temperature data."
 readme = "README.md"
