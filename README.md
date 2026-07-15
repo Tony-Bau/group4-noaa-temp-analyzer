@@ -48,7 +48,7 @@ The project follows a modular design with separate components for downloading, l
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://codebase.helmholtz.cloud/rse-lab-2026-group-projects/group-4.git
 cd group-4
 ```
 
@@ -82,16 +82,16 @@ uv sync
 
 ```bash
 uv run noaa-temp-analyzer \
-    --station 010010-99999 \
-    --year 2020
+    --station 10468099999 \
+    --year 2023
 ```
 
 ### Text-Only Mode
 
 ```bash
 uv run noaa-temp-analyzer \
-    --station 010010-99999 \
-    --year 2020 \
+    --station 10468099999 \
+    --year 2023 \
     --text-only
 ```
 
@@ -99,8 +99,8 @@ uv run noaa-temp-analyzer \
 
 ```bash
 uv run noaa-temp-analyzer \
-    --station 010010-99999 \
-    --year 2020 \
+    --station 10468099999 \
+    --year 2023 \
     -vv
 ```
 
@@ -215,10 +215,37 @@ The CI pipeline also performs a simple smoke test to verify that the command-lin
 
 ```bash
 uv run noaa-temp-analyzer \
-    --station 010030-99999 \
-    --year 2025 \
+    --station 10468099999 \
+    --year 2023 \
     --text-only
 ```
+
+---
+
+## Package Build and TestPyPI Deployment
+
+A semantic version tag pushed to the repository triggers the GitLab CI release pipeline.
+
+For example:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The pipeline then:
+
+1. Build the Python package.
+2. Store the generated package files as pipeline artifacts.
+3. Publish the built package automatically to TestPyPI. 
+
+The current TestPyPI package is available at:
+
+[noaa-temp-analyzer-group4 on TestPyPI](https://test.pypi.org/project/noaa-temp-analyzer-group4/)
+
+The project is also published on the Zenodo Sandbox:
+
+[noaa-temp-analyzer on Zenodo Sandbox](https://sandbox.zenodo.org/records/565495)
 
 ---
 
