@@ -31,11 +31,11 @@ to become
 
 Note: This declaration template is taken from the TU Dresden RSE 2025 Individual Project assignment.
 
-Hereby, I `<Name>` declare that I have used AI tools to complete this assignment in the following ways:
+Hereby, I `Tony Baudis` declare that I have used AI tools to complete this assignment in the following ways:
 
 <!-- Select the checkboxes that apply !-->
 
-- [] I have not used any AI tools to aid in completing this assignment
+- [x] I have not used any AI tools to aid in completing this assignment
 - [] I have used AI tools in completing this assignment for the following purposes:
   - Help with understanding the tasks and research
     - [] Translation of tasks or instructions into my native language
@@ -55,9 +55,9 @@ I have used the following AI tools for completing this assignment: `name`
 
 I further confirm that:
 
-- [] I have placed _ALL_ AI conversation logs related to solving this assignment into the _ai-logs_ directory
-- [] I understand that the teaching staff reserves the right to hold a follow-up interview about the assignment if the undeclared use of AI tools is suspected
-- [] I understand that failing to fully and correctly declare the usage of AI tools will lead to failing the assignment
+- [x] I have placed _ALL_ AI conversation logs related to solving this assignment into the _ai-logs_ directory
+- [x] I understand that the teaching staff reserves the right to hold a follow-up interview about the assignment if the undeclared use of AI tools is suspected
+- [x] I understand that failing to fully and correctly declare the usage of AI tools will lead to failing the assignment
 
 ---
 # AI Usage: Link / Transcript: Link to the exported chat log or conversation transcript.
