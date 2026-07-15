@@ -1,56 +1,58 @@
 # noaa-temp-analyzer
 
-A command-line tool for analyzing NOAA ISD-Lite weather data.
+A command-line tool for downloading, analyzing, and visualizing NOAA ISD-Lite weather data.
+
+---
 
 ## Description
 
-This project was developed by **Group 4** as part of the **RSE Lab** course.
+This project was developed by **Group 4** as part of the **Research Software Engineering (RSE) Lab** course.
 
-The tool allows users to select a weather station and a year, load the corresponding NOAA ISD-Lite weather data, clean temperature measurements, and generate a concise analysis. Optionally, the application can create visualizations and either display them interactively or save them for later use.
+The application allows users to download NOAA ISD-Lite weather data for a selected weather station and year, clean temperature measurements, calculate summary statistics, and optionally generate and save temperature-over-time plots.
+
+The project follows a modular design with separate components for downloading, loading, cleaning, analyzing, and visualizing weather data.
 
 ---
 
 ## Features
 
-* **Station Selection** – Specify a weather station using:
-
-  ```bash
-  --station <station_id>
-  ```
-
-* **Year Selection** – Select the year to analyze:
-
-  ```bash
-  --year <year>
-  ```
-
-* **Verbose Logging** – Control logging detail levels:
-
-  ```bash
-  -v
-  -vv
-  -vvv
-  ```
-
-* **Text-Only Mode** – Print analysis results directly to the terminal:
-
-  ```bash
-  --text-only
-  ```
-
-* **Data Visualization** – Generate and display or save temperature plots.
+- Download NOAA ISD-Lite weather data for a selected weather station and year.
+- Load and parse compressed NOAA ISD-Lite weather files.
+- Clean temperature measurements by:
+  - removing invalid values,
+  - handling missing data,
+  - converting temperatures from tenths of a degree to degrees Celsius.
+- Calculate summary statistics including:
+  - Number of valid measurements
+  - Mean temperature
+  - Minimum temperature
+  - Maximum temperature
+  - Median temperature
+  - Standard deviation
+- Generate and save temperature-over-time plots.
+- Support terminal-only output using `--text-only`.
+- Support configurable logging levels using:
+  - `-v`
+  - `-vv`
+  - `-vvv`
 
 ---
 
-## Installation & Setup
-
-This project uses **uv** for dependency and environment management.
+## Installation
 
 ### Prerequisites
 
-* Python 3.10
+- Python 3.10
+- uv
 
-### Install Dependencies
+Clone the repository:
+
+```bash
+git clone https://codebase.helmholtz.cloud/rse-lab-2026-group-projects/group-4.git
+cd group-4
+```
+
+Install all project dependencies:
 
 ```bash
 uv sync
@@ -60,76 +62,208 @@ uv sync
 
 ## Requirements
 
-### Core Dependencies
+### Runtime Dependencies
 
-* pandas
-* matplotlib
-* click
+- pandas
+- matplotlib
+- click
+- requests
 
-### Development Tools (defined in dependency-groups)
+### Development Dependencies
 
-* ruff
-* pytest
+- pytest
+- ruff
 
 ---
 
 ## Usage
 
-> **Temporary Note:** The usage examples below use `uv run python main.py`. later we'll update this to the final CLI command.
 ### Basic Example
 
 ```bash
-uv run python main.py --station 10468099999 --year 2023
+uv run noaa-temp-analyzer \
+    --station 10468099999 \
+    --year 2023
 ```
 
 ### Text-Only Mode
 
 ```bash
-uv run python main.py --station 10468099999 --year 2023 --text-only
+uv run noaa-temp-analyzer \
+    --station 10468099999 \
+    --year 2023 \
+    --text-only
 ```
 
 ### Verbose Output
 
 ```bash
-uv run python main.py --station 10468099999 --year 2023 -vv
+uv run noaa-temp-analyzer \
+    --station 10468099999 \
+    --year 2023 \
+    -vv
 ```
+
+---
+
+## Workflow
+
+The application performs the following steps:
+
+1. Download the NOAA ISD-Lite weather data.
+2. Load and parse the downloaded dataset.
+3. Clean the temperature measurements.
+4. Calculate summary statistics.
+5. Print the analysis results.
+6. Optionally generate and save a temperature plot.
+
+---
+
+## Output Files
+
+During execution, the application creates the following directories:
+
+- `data/` – stores downloaded NOAA ISD-Lite weather data.
+- `plots/` – stores generated temperature plots when `--text-only` is **not** enabled.
+
+These files are generated locally and should not be committed to the repository.
+
+---
+
+## Project Structure
+
+```text
+src/
+└── noaa_temp_analyzer/
+    ├── __main__.py
+    ├── cli.py
+    ├── downloader.py
+    ├── loader.py
+    ├── cleaner.py
+    ├── analysis.py
+    └── plotting.py
+
+tests/
+├── test_cli.py
+├── test_downloader.py
+├── test_loader.py
+├── test_cleaner.py
+└── test_analysis.py
+```
+
+### Module Overview
+
+| Module | Responsibility |
+|---------|----------------|
+| `cli.py` | Command-line interface |
+| `downloader.py` | Download NOAA ISD-Lite weather data |
+| `loader.py` | Load and parse weather data |
+| `cleaner.py` | Clean temperature measurements |
+| `analysis.py` | Calculate summary statistics |
+| `plotting.py` | Generate and save temperature plots |
+
+---
+
+## Example Output
+
+```text
+Temperature statistics
+
+Valid measurements: 8653
+Mean temperature: 0.41 °C
+Minimum temperature: -14.1 °C
+Maximum temperature: 10.7 °C
+Median temperature: 1.0 °C
+Standard deviation: 4.43 °C
+```
+
+When graphics are enabled, the generated plot is saved to the `plots/` directory.
 
 ---
 
 ## Testing & CI
 
-We use GitLab's built-in Continuous Integration (CI) to ensure code stability and maintain code quality.
+The project uses GitLab CI together with **pytest** and **Ruff** to maintain code quality.
 
-### Automated Checks
-
-* **Automated Testing:** Every Merge Request triggers a GitLab CI pipeline that runs the test suite using `pytest`.
-* **Code Quality:** The pipeline also performs linting and formatting checks using `ruff`.
-
-### Run Tests Locally
-
-Before pushing your changes, run:
+### Run Tests
 
 ```bash
 uv run pytest
 ```
 
-### Run Linting Locally
+### Run Ruff Checks
 
 ```bash
 uv run ruff check .
 ```
 
+### Verify Formatting
+
+```bash
+uv run ruff format --check .
+```
+
+### Automatically Format the Code
+
+```bash
+uv run ruff format .
+```
+
+### CLI Smoke Test
+
+The CI pipeline also performs a simple smoke test to verify that the command-line interface runs successfully.
+
+```bash
+uv run noaa-temp-analyzer \
+    --station 10468099999 \
+    --year 2023 \
+    --text-only
+```
+
+---
+
+## Package Build and TestPyPI Deployment
+
+A semantic version tag pushed to the repository triggers the GitLab CI release pipeline.
+
+For example:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The pipeline then:
+
+1. Build the Python package.
+2. Store the generated package files as pipeline artifacts.
+3. Publish the built package automatically to TestPyPI. 
+
+The current TestPyPI package is available at:
+
+[noaa-temp-analyzer-group4 on TestPyPI](https://test.pypi.org/project/noaa-temp-analyzer-group4/)
+
+The project is also published on the Zenodo Sandbox:
+
+[noaa-temp-analyzer on Zenodo Sandbox](https://sandbox.zenodo.org/records/565495)
+
 ---
 
 ## Contributing
 
-Please refer to **CONTRIBUTING.md** for details about:
+Please refer to **CONTRIBUTING.md** for details on:
 
-* GitLab workflow
-* Branch naming conventions
-* Merge Request process
-* Commit message style
-* Code quality requirements
+- GitLab workflow
+- Branch naming conventions
+- Merge Request process
+- Commit message conventions
+- Code quality requirements
+
+---
+
+## Citation
+
+If you use this software in research or teaching, please cite the project using the metadata provided in **CITATION.cff**.
 
 ---
 
@@ -137,13 +271,13 @@ Please refer to **CONTRIBUTING.md** for details about:
 
 Developed by **Group 4**:
 
-* Yusuf Bildik
-* Friedrich Vincent Löwe
-* Prem Murugaraj
-* Tony Baudis
+- Yusuf Bildik
+- Friedrich Vincent Löwe
+- Prem Murugaraj
+- Tony Baudis
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See the `LICENSE.md` file for details.
+This project is licensed under the **MIT License**. See **LICENSE.md** for details.
