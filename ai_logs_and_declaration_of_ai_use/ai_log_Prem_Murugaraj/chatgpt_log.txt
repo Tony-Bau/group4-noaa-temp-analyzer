@@ -1,0 +1,554 @@
+Your part (data loading, cleaning, analysis, and plotting) is a good module to separate from the CLI. The CLI should simply call your functions.
+
+A good project structure could look like this:
+
+noaa-temp-analyzer/
+│
+├── src/
+│   └── noaa_temp_analyzer/
+│       ├── __init__.py
+│       ├── cli.py
+│       ├── loader.py        # Load NOAA files
+│       ├── cleaning.py      # Clean temperature data
+│       ├── analysis.py      # Statistics
+│       ├── plotting.py      # Matplotlib plots
+│       └── utils.py
+│
+├── tests/
+├── data/
+├── pyproject.toml
+└── README.md
+1. Data Loading (loader.py)
+
+ISD-Lite files are whitespace-separated.
+
+A loading function could look like:
+
+import pandas as pd
+
+COLUMN_NAMES = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "air_temperature",
+    "dew_point",
+    "sea_level_pressure",
+    "wind_direction",
+    "wind_speed",
+    "sky_condition",
+    "precipitation_1h",
+    "precipitation_6h",
+]
+
+def load_weather_data(filepath: str) -> pd.DataFrame:
+    """
+    Load NOAA ISD-Lite weather data.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to ISD-Lite file.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+
+    df = pd.read_csv(
+        filepath,
+        delim_whitespace=True,
+        names=COLUMN_NAMES,
+    )
+
+    return df
+2. Data Cleaning (cleaning.py)
+
+NOAA uses special missing values.
+
+For temperature:
+
+-9999 = missing
+
+Temperature is stored in tenths of degrees Celsius.
+
+import pandas as pd
+
+MISSING_TEMP = -9999
+
+def clean_temperature(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace missing values and convert temperature to Celsius.
+    """
+
+    df = df.copy()
+
+    df["air_temperature"] = (
+        df["air_temperature"]
+        .replace(MISSING_TEMP, pd.NA)
+        / 10
+    )
+
+    return df
+
+You can also remove rows:
+
+df = df.dropna(subset=["air_temperature"])
+3. Create a Datetime Column
+
+Makes plotting much easier.
+
+def create_datetime(df):
+    df = df.copy()
+
+    df["datetime"] = pd.to_datetime(
+        df[["year", "month", "day", "hour"]]
+    )
+
+    return df
+4. Analysis (analysis.py)
+
+Example:
+
+def summarize_temperature(df):
+    temp = df["air_temperature"]
+
+    return {
+        "count": temp.count(),
+        "mean": temp.mean(),
+        "minimum": temp.min(),
+        "maximum": temp.max(),
+        "median": temp.median(),
+        "std": temp.std(),
+    }
+
+CLI output:
+
+Temperature Summary
+-------------------
+Samples : 8750
+Mean    : 12.8 °C
+Median  : 13.0 °C
+Minimum : -11.4 °C
+Maximum : 34.2 °C
+Std Dev : 8.9 °C
+5. Plotting (plotting.py)
+import matplotlib.pyplot as plt
+
+def plot_temperature(df):
+    plt.figure(figsize=(12,5))
+
+    plt.plot(
+        df["datetime"],
+        df["air_temperature"]
+    )
+
+    plt.xlabel("Date")
+    plt.ylabel("Temperature (°C)")
+    plt.title("Temperature")
+
+    plt.tight_layout()
+    plt.show()
+
+If --text-only is used, simply don't call this function.
+
+6. How the CLI Would Use Your Code
+df = load_weather_data(filepath)
+
+df = clean_temperature(df)
+
+df = create_datetime(df)
+
+stats = summarize_temperature(df)
+
+print_summary(stats)
+
+if not text_only:
+    plot_temperature(df)
+
+Your teammates working on the CLI won't need to know how the data is processed—they'll just call your functions.
+
+7. Suggested Unit Tests
+
+Create tests for each module.
+
+test_loader.py
+def test_load_returns_dataframe():
+    ...
+test_cleaning.py
+def test_missing_temperature_removed():
+    ...
+
+def test_temperature_conversion():
+    ...
+
+Example:
+
+import pandas as pd
+
+from noaa_temp_analyzer.cleaning import clean_temperature
+
+def test_temperature_conversion():
+    df = pd.DataFrame({
+        "air_temperature": [250]
+    })
+
+    cleaned = clean_temperature(df)
+
+    assert cleaned["air_temperature"][0] == 25.0
+8. Suggested GitLab Issues for Your Part
+feature/data-loading — Read NOAA ISD-Lite files into a DataFrame.
+feature/data-cleaning — Handle missing values and convert temperatures from tenths of °C to °C.
+feature/temperature-analysis — Compute summary statistics (mean, median, min, max, standard deviation, sample count).
+feature/plotting — Generate a temperature time-series plot with Matplotlib.
+test/data-processing — Add unit tests for loading, cleaning, analysis, and plotting.
+
+This breakdown makes it easy for multiple people to work independently and aligns well with the branching and review workflow your group has proposed.
+
+lets go one by one first we have to download the data from
+"https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/" when the user give the input station and year. we need a script for that
+
+Yes. The downloader should be its own module (e.g. loader.py). Given a station ID and a year, it should:
+
+Build the correct NOAA URL.
+Download the .gz file.
+Save it locally (or optionally keep it in memory).
+Return the path to the downloaded file.
+
+The NOAA ISD-Lite data is organized by year, and the filename format is:
+
+https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/<YEAR>/<STATION>-<YEAR>.gz
+
+For example:
+
+https://www.ncei.noaa.gov/pub/data/noaa/isd-lite/2023/010010-99999-2023.gz
+
+This directory structure and filename pattern are used throughout the ISD-Lite archive.
+
+Step 1: Install requests
+
+If you're using uv:
+
+uv add requests
+Step 2: loader.py
+from pathlib import Path
+import requests
+
+BASE_URL = "https://www.ncei.noaa.gov/pub/data/noaa/isd-lite"
+
+
+def download_weather_data(
+    station: str,
+    year: int,
+    output_dir: str = "data",
+) -> Path:
+    """
+    Download a NOAA ISD-Lite file.
+
+    Parameters
+    ----------
+    station : str
+        Weather station ID (e.g. 010010-99999).
+    year : int
+        Year of the data.
+    output_dir : str
+        Directory where the file will be saved.
+
+    Returns
+    -------
+    Path
+        Path to the downloaded .gz file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the station or year does not exist.
+    """
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    filename = f"{station}-{year}.gz"
+    url = f"{BASE_URL}/{year}/{filename}"
+
+    destination = output_path / filename
+
+    response = requests.get(url, timeout=30)
+
+    if response.status_code == 404:
+        raise FileNotFoundError(
+            f"No data found for station {station} in {year}."
+        )
+
+    response.raise_for_status()
+
+    destination.write_bytes(response.content)
+
+    return destination
+Example
+file_path = download_weather_data(
+    station="010010-99999",
+    year=2023,
+)
+
+print(file_path)
+
+Output:
+
+data/010010-99999-2023.gz
+Why this design?
+Uses pathlib (recommended for modern Python).
+Raises meaningful exceptions instead of printing errors.
+Automatically creates the data/ directory if it doesn't exist.
+Returns the downloaded file path so the next function can read it.
+
+The next logical step is to write a function such as load_weather_data(file_path) that opens the downloaded .gz file directly with pandas.read_csv(..., compression="gzip"), so there's no need to manually decompress it.
+
+Exactly. The workflow becomes:
+
+download → load → clean → analyze → plot
+
+The cleaning step should only prepare the data for analysis. For NOAA ISD-Lite temperature data, this typically means:
+
+Replace missing values (-9999) with NaN.
+Convert temperature from tenths of °C to °C.
+Remove rows where temperature is missing.
+Optionally sort by datetime.
+cleaning.py
+import pandas as pd
+
+# NOAA missing value for air temperature
+MISSING_TEMPERATURE = -9999
+
+
+def clean_temperature(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean the temperature data.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing 'datetime' and 'temperature'.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Cleaned DataFrame with temperatures in degrees Celsius.
+    """
+
+    cleaned = df.copy()
+
+    # Replace NOAA missing values with NaN
+    cleaned["temperature"] = cleaned["temperature"].replace(
+        MISSING_TEMPERATURE,
+        pd.NA,
+    )
+
+    # Convert from tenths of degrees Celsius to degrees Celsius
+    cleaned["temperature"] = cleaned["temperature"] / 10
+
+    # Remove rows with missing temperatures
+    cleaned = cleaned.dropna(subset=["temperature"])
+
+    # Ensure chronological order
+    cleaned = cleaned.sort_values("datetime").reset_index(drop=True)
+
+    return cleaned
+Example
+
+Suppose the loaded data is:
+
+datetime	temperature
+2023-01-01 00:00	120
+2023-01-01 01:00	-9999
+2023-01-01 02:00	95
+
+After cleaning:
+
+datetime	temperature
+2023-01-01 00:00	12.0
+2023-01-01 02:00	9.5
+Why keep this separate?
+
+This makes each module responsible for one task:
+
+downloader.py → Download the file.
+loader.py → Read the file into a DataFrame.
+cleaning.py → Make the data usable.
+analysis.py → Compute statistics.
+plotting.py → Visualize the results.
+
+This separation also makes testing much easier.
+
+For example:
+
+def test_clean_temperature():
+    df = pd.DataFrame({
+        "datetime": pd.to_datetime([
+            "2023-01-01 00:00",
+            "2023-01-01 01:00",
+        ]),
+        "temperature": [150, -9999],
+    })
+
+    cleaned = clean_temperature(df)
+
+    assert len(cleaned) == 1
+    assert cleaned.iloc[0]["temperature"] == 15.0
+
+This test checks that the missing value is removed and the remaining temperature is correctly converted from tenths of a degree to degrees Celsius.
+
+next lets look into the analysis. I gues we can do min, max, mean, deviation, etc. what are the other other analysis we can do with this  data
+
+For a weather data assignment, I'd keep the analysis focused on statistics that are meaningful but not overly complex. You want enough to demonstrate data processing without making the project too large.
+
+Basic Statistics (Definitely Include)
+
+These are the standard descriptive statistics:
+
+Minimum temperature
+Maximum temperature
+Mean temperature
+Median temperature
+Standard deviation
+Number of observations
+
+Using pandas, they're straightforward:
+
+def analyze_temperature(df):
+    temp = df["temperature"]
+
+    return {
+        "count": temp.count(),
+        "min": temp.min(),
+        "max": temp.max(),
+        "mean": temp.mean(),
+        "median": temp.median(),
+        "std": temp.std(),
+    }
+Additional Statistics (Good Additions)
+Temperature Range
+
+Shows the spread between the warmest and coldest observations.
+
+range = max - min
+Quartiles
+
+Useful for understanding the distribution.
+
+Q1 (25%)
+Median (50%)
+Q3 (75%)
+temp.quantile([0.25, 0.5, 0.75])
+Variance
+
+Since you're already computing the standard deviation, you can also report the variance.
+
+variance = temp.var()
+Missing Values
+
+Since you're cleaning the data, it's useful to report how many values were removed.
+
+For example:
+
+Original observations : 8760
+Removed observations  : 15
+Remaining observations: 8745
+
+This demonstrates that your cleaning step had an effect.
+
+Time-Based Analysis
+
+Since you have a datetime column, you can compute more interesting summaries.
+
+Monthly Average Temperature
+monthly = (
+    df.groupby(df["datetime"].dt.month)["temperature"]
+      .mean()
+)
+
+Example:
+
+Month	Avg Temp
+1	2.1°C
+2	4.8°C
+...	...
+
+This is particularly useful if you're plotting the data.
+
+Daily Average Temperature
+daily = (
+    df.groupby(df["datetime"].dt.date)["temperature"]
+      .mean()
+)
+
+This creates one average temperature per day and can make a year's worth of hourly data much easier to visualize.
+
+Hottest and Coldest Day
+
+Find the exact date and time of the highest and lowest recorded temperatures.
+
+max_row = df.loc[df["temperature"].idxmax()]
+min_row = df.loc[df["temperature"].idxmin()]
+
+Example output:
+
+Highest temperature:
+34.8°C on 2023-07-19 14:00
+
+Lowest temperature:
+-12.3°C on 2023-01-08 05:00
+Plot-Friendly Analysis
+
+If your teammate is making plots, you can prepare the data.
+
+For example:
+
+hourly_data
+daily_average
+monthly_average
+
+This avoids recalculating values inside the plotting functions.
+
+A Good analysis.py
+
+I would split it into several small functions:
+
+analysis.py
+
+analyze_temperature(df)
+get_monthly_average(df)
+get_daily_average(df)
+get_temperature_extremes(df)
+
+For example:
+
+def analyze_temperature(df):
+    temp = df["temperature"]
+
+    return {
+        "count": temp.count(),
+        "minimum": temp.min(),
+        "maximum": temp.max(),
+        "range": temp.max() - temp.min(),
+        "mean": temp.mean(),
+        "median": temp.median(),
+        "std": temp.std(),
+        "variance": temp.var(),
+    }
+My recommendation
+
+For a university group assignment, I'd implement these core analyses:
+
+✅ Number of observations
+✅ Minimum temperature
+✅ Maximum temperature
+✅ Temperature range
+✅ Mean temperature
+✅ Median temperature
+✅ Standard deviation
+✅ Monthly average temperatures
+✅ Hottest observation (value and timestamp)
+✅ Coldest observation (value and timestamp)
+
+These are easy to implement with pandas, demonstrate meaningful data analysis, and provide useful inputs for both the CLI output and any plots you generate.
