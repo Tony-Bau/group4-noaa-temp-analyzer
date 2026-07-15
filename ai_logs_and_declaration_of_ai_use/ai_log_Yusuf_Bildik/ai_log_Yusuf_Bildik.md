@@ -31,33 +31,33 @@ to become
 
 Note: This declaration template is taken from the TU Dresden RSE 2025 Individual Project assignment.
 
-Hereby, I `<Name>` declare that I have used AI tools to complete this assignment in the following ways:
+Hereby, I `<Yusuf Bildik>` declare that I have used AI tools to complete this assignment in the following ways:
 
 <!-- Select the checkboxes that apply !-->
 
 - [] I have not used any AI tools to aid in completing this assignment
-- [] I have used AI tools in completing this assignment for the following purposes:
+- [*] I have used AI tools in completing this assignment for the following purposes:
   - Help with understanding the tasks and research
     - [] Translation of tasks or instructions into my native language
-    - [] Re-phrasing or additional explanation of tasks or instructions
+    - [*] Re-phrasing or additional explanation of tasks or instructions
     - [] Researching domain knowledge related to the data set
   - Support for writing answers to assignment questions or discussion comments
-    - [] Translation of answers to assignments from my native language to English
-    - [] Proof-reading or correcting answers that I have written myself
-    - [] Generating answers to written assignments
+    - [*] Translation of answers to assignments from my native language to English
+    - [*] Proof-reading or correcting answers that I have written myself
+    - [*] Generating answers to written assignments
   - Support for designing and writing code
-    - [] Generating Code
-    - [] Debugging code
-    - [] Looking up documentation and best practises
+    - [*] Generating Code
+    - [*] Debugging code
+    - [*] Looking up documentation and best practises
   - Other: `name  `
 
-I have used the following AI tools for completing this assignment: `name`
+I have used the following AI tools for completing this assignment: `Gemini`
 
 I further confirm that:
 
-- [] I have placed _ALL_ AI conversation logs related to solving this assignment into the _ai-logs_ directory
-- [] I understand that the teaching staff reserves the right to hold a follow-up interview about the assignment if the undeclared use of AI tools is suspected
-- [] I understand that failing to fully and correctly declare the usage of AI tools will lead to failing the assignment
+- [*] I have placed _ALL_ AI conversation logs related to solving this assignment into the _ai-logs_ directory
+- [*] I understand that the teaching staff reserves the right to hold a follow-up interview about the assignment if the undeclared use of AI tools is suspected
+- [*] I understand that failing to fully and correctly declare the usage of AI tools will lead to failing the assignment
 
 ---
 # AI Usage: Link / Transcript: Link to the exported chat log or conversation transcript.
